@@ -1,8 +1,4 @@
-const UserModel = require('../models/User');
-const ProductModel = require('../models/Product');
-const OrderModel = require('../models/Order');
 const CartModel = require('../models/Cart');
-const DiscountCodeModel = require('../models/DiscountCode');
 const ObjectId = require('mongodb').ObjectId;
 
 const addToCart = async (req, res) => {
