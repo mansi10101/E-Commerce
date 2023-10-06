@@ -25,7 +25,7 @@ const addToCart = async (req, res) => {
     }
 
     await cart.save();
-    res.json({ cart, message: 'Item added to cart successfully' });
+    res.json({ message: 'Item added to cart successfully' });
   } catch (err) {
     res.status(500).json({ error: err });
   }
@@ -50,7 +50,7 @@ const deleteItemFromCart = async (req, res) => {
       // Remove the item from the cart if found
       cart.items.splice(itemIndex, 1);
       await cart.save();
-      res.json({ message: 'Item removed from cart successfully' });
+      res.status(200).json({ message: 'Item removed from cart successfully' });
     } else {
       res.status(404).json({ error: 'Item not found in the cart' });
     }

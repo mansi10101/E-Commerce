@@ -1,6 +1,7 @@
 const ProductModel = require('../models/Product');
 const UserModel = require('../models/User');
 const CartModel = require('../models/Cart');
+const ObjectId = require('mongodb').ObjectId;
 
 const getProsucts = async (req, res) => {
   try {
@@ -11,27 +12,81 @@ const getProsucts = async (req, res) => {
   }
 };
 
-const getUsers = async (req, res) => {
+const getCartById = async (req, res) => {
   try {
-    const users = await UserModel.find({});
-    res.status(200).json(users);
+    const { id } = req.params;
+    const cart = await CartModel.findById(id)
+      .populate({
+        path: 'items',
+        select: 'product quantity',
+        populate: {
+          path: 'product',
+          select: 'name price quantity',
+        },
+      })
+      .exec();
+    res.status(200).json(cart.items);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
 
-const getCartById = async (req, res) => {
+const increase_product = async (req, res) => {
+  const { id: cartId } = req.params;
+  const { productId } = req.body;
   try {
-    const { id } = req.params;
-    const cart = await CartModel.findById(id);
-    res.status(200).json(cart);
+    const cart = await CartModel.findById(cartId);
+
+    if (!cart) {
+      return res.status(404).json({ error: 'Cart not found' });
+    }
+    const cartItem = cart.items.find(
+      (item) => item.product.toString() === new ObjectId(productId).toString()
+    );
+
+    if (cartItem) {
+      // If the product exists in the cart, update the quantity
+      cartItem.quantity += 1;
+      await cart.save();
+
+      res.status(200).json(cartItem);
+    } else {
+      console.log('Product doesnt exist in cart');
+    }
+  } catch (err) {
+    res.status(403).json({ error: err });
+  }
+};
+
+const decrease_product = async (req, res) => {
+  const { id: cartId } = req.params;
+  const { productId } = req.body;
+  try {
+    const cart = await CartModel.findById(cartId);
+    if (!cart) {
+      return res.status(404).json({ error: 'Cart not found' });
+    }
+    const cartItem = cart.items.find(
+      (item) => item.product.toString() === new ObjectId(productId).toString()
+    );
+
+    if (cartItem) {
+      // If the product exists in the cart, update the quantity
+      cartItem.quantity -= 1;
+      await cart.save();
+
+      res.status(200).json({ cartItem });
+    } else {
+      console.log('Product doesnt exist in cart');
+    }
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(403).json({ error: error });
   }
 };
 
 module.exports = {
   getProsucts,
-  getUsers,
   getCartById,
+  increase_product,
+  decrease_product,
 };
