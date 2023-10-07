@@ -4,7 +4,7 @@ var bcrypt = require('bcrypt');
 var BCRYPT_SALT_ROUNDS = 12;
 
 const registerUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
   const userExist = await UserModel.findOne({ email: email });
   if (userExist) {
     return res.status(403).json({
@@ -14,10 +14,15 @@ const registerUser = async (req, res) => {
     bcrypt
       .hash(password, BCRYPT_SALT_ROUNDS)
       .then(function (hashedPassword) {
-        return UserModel.create({ email, password: hashedPassword });
+        const user = UserModel.create({
+          email,
+          password: hashedPassword,
+          name,
+        });
+        return user;
       })
-      .then(function () {
-        res.status(200).json({ message: 'SignUp Sucessfull!' });
+      .then(function (user) {
+        res.status(200).json(user);
       })
       .catch(function (error) {
         console.log(error);
@@ -26,18 +31,19 @@ const registerUser = async (req, res) => {
 };
 
 const authenticateUser = async (req, res) => {
-  const { email, password } = req.body();
+  const { email, password } = req.body;
   await UserModel.findOne({ email: email })
     .then(function (user) {
-      return bcrypt.compare(password, user.password);
+      const samePassword = bcrypt.compare(password, user.password);
+      return { samePassword, user };
     })
-    .then(function (samePassword) {
-      if (!samePassword) {
+    .then(function (user) {
+      if (!user.samePassword) {
         return res.status(403).json({
           error: 'Incorrect Password !!',
         });
       } else {
-        res.status(200).json({ message: 'Login Sucessfull!' });
+        res.status(200).json(user.user);
       }
     })
     .catch(function (error) {

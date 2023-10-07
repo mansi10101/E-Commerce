@@ -11,7 +11,7 @@ const {
   decrease_product,
 } = require('../controllers/getData');
 const { checkout, checkDiscount } = require('../controllers/Order');
-const { generateDiscount } = require('../controllers/AdminAPI');
+const { generateDiscount, summary } = require('../controllers/AdminAPI');
 
 router.get('/products', getProsucts);
 router.get('/cart/:id', getCartById);
@@ -28,5 +28,6 @@ router.post('/checkout', checkout);
 router.post('/check-discount', checkDiscount);
 
 router.post('/generate-discount-code', generateDiscount);
+router.get('/summary', summary);
 
 module.exports = router;

@@ -15,7 +15,7 @@ const getProsucts = async (req, res) => {
 const getCartById = async (req, res) => {
   try {
     const { id } = req.params;
-    const cart = await CartModel.findById(id)
+    const cart = await CartModel.findOne({ user: id })
       .populate({
         path: 'items',
         select: 'product quantity',
@@ -25,7 +25,7 @@ const getCartById = async (req, res) => {
         },
       })
       .exec();
-    res.status(200).json(cart.items);
+    res.status(200).json(cart);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
